@@ -1,53 +1,58 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Онлайн Java IDE (IntelliJ-style)</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Monaco Editor -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Официальный Тест IQ до 360</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #0057b8;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #555;
+            font-style: italic;
+            margin-bottom: 40px;
+        }
+        .btn {
+            background: #0057b8;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #003d7a;
+        }
+        .footer {
+            margin-top: 60px;
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
 </head>
 <body>
-  <!-- Верхнее меню -->
-  <div id="menubar">
-    <span>File</span>
-    <span>Edit</span>
-    <span>View</span>
-    <span>Code</span>
-    <span>Run</span>
-    <span>Help</span>
-  </div>
+    <h1>📊 ОФИЦИАЛЬНЫЙ ТЕСТ IQ</h1>
+    <div class="subtitle">Уникальная методика измерения интеллекта до 360 пунктов</div>
+    <p>Тест состоит из 10 вопросов. Внимательно читайте задания.</p>
+    <p>На прохождение — нет ограничения по времени.</p>
 
-  <!-- Основное рабочее пространство -->
-  <div id="main-layout">
-    <!-- Левая панель (Project) -->
-    <div id="sidebar">
-      <div class="title">Project</div>
-      <ul>
-        <li>src</li>
-        <li class="active">Main.java</li>
-      </ul>
+    <button class="btn" onclick="location.href='test.html'">Начать тестирование</button>
+
+    <div class="footer">
+        © 2025 IQ Institute of Advanced Geniuses (неофициально). Все права защищены научной фантастикой.
     </div>
-
-    <!-- Центральная область -->
-    <div id="center">
-      <!-- Toolbar -->
-      <div id="toolbar">
-        <button onclick="checkCode()">▶ Run (Проверка)</button>
-        <button onclick="formatCode()">⚙ Format</button>
-        <button onclick="applyAutoFixes()">✨ AutoFix</button>
-      </div>
-
-      <!-- Редактор кода -->
-      <div id="editor">Loading editor...</div>
-
-      <!-- Консоль -->
-      <div id="console-title">Console</div>
-      <pre id="console">[Console output]</pre>
-    </div>
-  </div>
-
-  <!-- Скрипт -->
-  <script src="script.js"></script>
 </body>
 </html>
