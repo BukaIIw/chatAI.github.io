@@ -10,7 +10,7 @@ require(['vs/editor/editor.main'], function () {
     automaticLayout: true
   });
 
-  // Автодополнения (sout, psvm)
+  // Autocomplete: psvm + sout
   monaco.languages.registerCompletionItemProvider('java', {
     provideCompletionItems: () => {
       const suggestions = [
@@ -26,7 +26,7 @@ require(['vs/editor/editor.main'], function () {
           kind: monaco.languages.CompletionItemKind.Snippet,
           insertText: 'System.out.println($0);',
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Вывести в консоль'
+          documentation: 'Вывод в консоль'
         }
       ];
       return { suggestions };
@@ -34,7 +34,7 @@ require(['vs/editor/editor.main'], function () {
   });
 });
 
-// === Проверка кода (псевдокомпилятор) ===
+// === Проверка кода ===
 function checkCode() {
   const code = editor.getValue();
   const lines = code.split("\n");
@@ -49,11 +49,11 @@ function checkCode() {
 
     // println без ;
     if (trimmed.includes("System.out.print") && !trimmed.endsWith(";")) {
-      errors.push({ line: num, message: "println без ;" });
+      errors.push({ line: num, message: "println должна заканчиваться на ;" });
       fixes.push({ line: num, fix: () => fixSemicolon(num) });
     }
 
-    // System с ошибкой (e.g. Syst1245em)
+    // System ошибка
     if (/Syst\w*\.out/.test(trimmed) && !trimmed.includes("System.out")) {
       errors.push({ line: num, message: "Опечатка в 'System'" });
       fixes.push({ line: num, fix: () => fixSystemWord(num) });
@@ -75,24 +75,25 @@ function checkCode() {
       errors.push({ line: num, message: "Лишние символы после }" });
     }
 
-    // Подозрительные строки без ;
+    // Подозрение на пропущенную ;
     if (
       trimmed.length > 0 &&
       !/[;{}]$/.test(trimmed) &&
-      !/^(class|import|public|if|for|while|else|switch|try|catch|}|package)/.test(trimmed)
+      !/^(class|import|public|if|for|while|else|switch|try|catch|package)/.test(trimmed)
     ) {
-      errors.push({ line: num, message: "Возможно пропущена ';'" });
+      errors.push({ line: num, message: "Возможно пропущена ;" });
     }
   });
 
-  // Глобальные проверки
+  // ---- Глобальные проверки ----
   if (!/class\s+\w+/.test(code)) {
     errors.push({ line: 1, message: "Нет объявления класса" });
   }
 
-  // Проверка корректного метода main
-  if (!/public\s+static\s+void\s+main\s*KATEX_INLINE_OPEN\s*String(```math
-```|\s+\.\.\.)\s+\w+\s*KATEX_INLINE_CLOSE/.test(code)) {
+  // Проверка корректного main
+  const mainRegex = /public\s+static\s+void\s+main\s*KATEX_INLINE_OPEN\s*String(```math
+```|\s+\.\.\.)\s+\w+\s*KATEX_INLINE_CLOSE/;
+  if (!mainRegex.test(code)) {
     errors.push({ line: 1, message: "Нет корректного метода main(String[] args)" });
     fixes.push({ line: 1, fix: () => insertMainStub() });
   }
@@ -102,19 +103,16 @@ function checkCode() {
   if (quoteToggle) errors.push({ line: 1, message: "Незакрытые кавычки \" \"" });
 
   showErrors(errors);
-
-  // сохраним исправления
   window._fixes = fixes;
 }
 
-// === Автофикс всех ошибок ===
+// === Автоправки ===
 function applyAutoFixes() {
   if (!window._fixes) return;
   window._fixes.forEach(f => f.fix());
   checkCode();
 }
 
-// === Автоисправления ===
 function fixSemicolon(lineNum) {
   const code = editor.getValue().split("\n");
   code[lineNum - 1] = code[lineNum - 1] + ";";
@@ -131,7 +129,7 @@ function insertMainStub() {
   editor.setValue(code.join("\n"));
 }
 
-// === Вывод ошибок + подсветка маркерами ===
+// === Вывод ошибок + автоскролл ===
 function showErrors(errors) {
   const consoleBox = document.getElementById("console");
   if (errors.length === 0) {
@@ -150,6 +148,9 @@ function showErrors(errors) {
     message: err.message,
     severity: monaco.MarkerSeverity.Error
   })));
+
+  // ✅ Автопрокрутка вниз
+  consoleBox.scrollTop = consoleBox.scrollHeight;
 }
 
 // === Форматирование ===
