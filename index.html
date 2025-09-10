@@ -5,56 +5,94 @@
   <title>Проверка Java-кода</title>
   <style>
     body { font-family: sans-serif; padding:20px; background:#f9f9f9; }
-    textarea { width:100%; height:200px; font-family: monospace; font-size:14px; }
+    textarea { width:100%; height:220px; font-family: monospace; font-size:14px; }
     button { margin-top:10px; padding:8px 16px; background:#1976d2; color:white; border:none; border-radius:4px; cursor:pointer;}
-    pre { background:#222; color:#0f0; padding:10px; border-radius:6px; margin-top:15px; white-space:pre-wrap; }
-    .error { color:#ff4444; }
+    pre { background:#111; color:#eee; padding:10px; border-radius:6px; margin-top:15px; white-space:pre-wrap; }
+    .ok { color:#00ff00; }
+    .err { color:#ff4444; }
   </style>
 </head>
 <body>
   <h1>Проверка Java-кода</h1>
-  <p>Вставь свой код ниже и нажми «Проверить»:</p>
-  <textarea id="code">// Напиши что-нибудь...</textarea><br>
+  <p>Введи код и нажми «Проверить»:</p>
+  <textarea id="code">// Скопируй сюда код Java</textarea><br>
   <button onclick="checkCode()">Проверить</button>
   <pre id="result"></pre>
 
   <script>
     function checkCode() {
-      const lines = document.getElementById("code").value.split("\n");
+      const code = document.getElementById("code").value;
+      const lines = code.split("\n");
       let errors = [];
       let openBraces = 0;
+      let openParentheses = 0;
+      let openQuotes = false;
 
       lines.forEach((line, i) => {
-        const num = i+1;
-        if (line.includes("System.out.println") && !line.trim().endsWith(";")) {
-          errors.push("Строка " + num + ": System.out.println без ';'");
+        const trimmed = line.trim();
+        const num = i + 1;
+
+        // 1. Проверка println с ;
+        if (trimmed.startsWith("System.out.println") && !trimmed.endsWith(";")) {
+          errors.push("Строка " + num + ": 'System.out.println' должна заканчиваться на ';'");
         }
-        if (line.includes("{")) openBraces++;
-        if (line.includes("}")) openBraces--;
-        if (/public\s+static\s+void\s+main/.test(line) && !line.includes("String")) {
-          errors.push("Строка " + num + ": main должен иметь аргумент String[] args");
+
+        // 2. Пустые строчки в середине кода
+        if (trimmed === "" && i < lines.length - 1) {
+          errors.push("Строка " + num + ": пустая строка в коде");
+        }
+
+        // 3. Считаем фигурные скобки
+        if (trimmed.includes("{")) openBraces++;
+        if (trimmed.includes("}")) openBraces--;
+
+        // 4. Считаем круглые скобки
+        openParentheses += (trimmed.match(/KATEX_INLINE_OPEN/g) || []).length;
+        openParentheses -= (trimmed.match(/KATEX_INLINE_CLOSE/g) || []).length;
+
+        // 5. Проверка кавычек
+        for (let char of trimmed) {
+          if (char === '"') openQuotes = !openQuotes;
+        }
+
+        // 6. Проверка main
+        if (/public\s+static\s+void\s+main/.test(trimmed) && !trimmed.includes("String[]")) {
+          errors.push("Строка " + num + ": метод main должен содержать 'String[] args'");
+        }
+
+        // 7. Любая строка (кроме {,},import, class,public,for,if...) без ';'
+        if (
+          trimmed.length > 0 &&
+          !/[;{}]$/.test(trimmed) &&
+          !/^(class|import|public|if|for|while|else|switch|try|catch)/.test(trimmed)
+        ) {
+          errors.push("Строка " + num + ": пропущена ';' в конце");
         }
       });
 
+      // Глобальные проверки
       if (openBraces !== 0) {
         errors.push("Несбалансированные фигурные скобки { }");
       }
-
-      // Обязательные элементы
-      if (!document.getElementById("code").value.includes("class ")) {
-        errors.push("Нет объявления class");
+      if (openParentheses !== 0) {
+        errors.push("Несбалансированные круглые скобки ( )");
       }
-      if (!document.getElementById("code").value.includes("main")) {
+      if (openQuotes) {
+        errors.push("Незакрытые кавычки \" \" ");
+      }
+      if (!/class\s+\w+/.test(code)) {
+        errors.push("Нет объявления класса");
+      }
+      if (!/void\s+main\s*KATEX_INLINE_OPEN/.test(code)) {
         errors.push("Нет метода main");
       }
 
-      let resultBox = document.getElementById("result");
+      // Вывод результата
+      const resultBox = document.getElementById("result");
       if (errors.length === 0) {
-        resultBox.textContent = "✅ Ошибок не найдено!";
-        resultBox.style.color = "#0f0";
+        resultBox.innerHTML = "<span class='ok'>✅ Ошибок не найдено!</span>";
       } else {
-        resultBox.innerHTML = errors.map(e => "❌ " + e).join("\n");
-        resultBox.style.color = "#f44";
+        resultBox.innerHTML = errors.map(e => "<span class='err'>❌ " + e + "</span>").join("\n");
       }
     }
   </script>
