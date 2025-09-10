@@ -130,4 +130,75 @@
             ]
         },
         {
-            text: "Вопрос 7 из 10:<br>Что 
+            text: "Вопрос 7 из 10:<br>Что будет, если бесконечность разделить на ноль?",
+            options: [
+                "А) Математическая ошибка",
+                "Б) Вселенная моргнёт и перезагрузится",
+                "В) Получится 42",
+                "Г) Ничего — делить нельзя"
+            ]
+        },
+        {
+            text: "Вопрос 8 из 10:<br>Почему небо голубое, а не зелёное?",
+            options: [
+                "А) Из-за рассеяния Рэлея",
+                "Б) Потому что зелёное занято лягушками",
+                "В) На самом деле оно прозрачное",
+                "Г) Это иллюзия восприятия"
+            ]
+        },
+        {
+            text: "Вопрос 9 из 10:<br>Кто придумал время?",
+            options: [
+                "А) Люди, для удобства",
+                "Б) Большой взрыв, но он не признаётся",
+                "В) Боги, скучая на Олимпе",
+                "Г) Время всегда существовало"
+            ]
+        },
+        {
+            text: "Вопрос 10 из 10:<br>Какой ответ правильный?",
+            options: [
+                "А) Тот, который ты выбрал",
+                "Б) Всегда Б — это закон вселенной",
+                "В) Никакой — всё иллюзия",
+                "Г) Последний"
+            ]
+        }
+    ];
+
+    function loadQuestion(n) {
+        document.getElementById('question-text').innerHTML = questions[n].text;
+        const labels = document.querySelectorAll('.options label');
+        for (let i = 0; i < labels.length; i++) {
+            labels[i].innerHTML = `<input type="radio" name="answer" value="${['a','b','c','d'][i]}"> ${questions[n].options[i]}`;
+        }
+        document.getElementById('pb').style.width = ((n + 1) / totalQuestions * 100) + '%';
+    }
+
+    function next() {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        if (!selected) {
+            alert("Пожалуйста, выберите ответ.");
+            return;
+        }
+        answers.push(selected.value);
+
+        if (currentQuestion < totalQuestions - 1) {
+            currentQuestion++;
+            loadQuestion(currentQuestion);
+            // Сброс радиокнопок
+            document.querySelectorAll('input[name="answer"]').forEach(el => el.checked = false);
+        } else {
+            // Сохраняем ответы и переходим к результату
+            localStorage.setItem('iq_answers', JSON.stringify(answers));
+            window.location.href = 'result.html';
+        }
+    }
+
+    // Загружаем первый вопрос
+    loadQuestion(currentQuestion);
+</script>
+
+</body>
+</html>
