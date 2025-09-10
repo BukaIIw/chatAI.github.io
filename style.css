@@ -3,7 +3,7 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #2b2b2b; /* Тёмный стиль IntelliJ */
+  background: #2b2b2b; /* тёмная тема IntelliJ */
   color: white;
   font-family: "JetBrains Mono", monospace;
 }
@@ -47,4 +47,5 @@ body {
   height: 150px;
   overflow-y: auto;
   font-size: 13px;
+  color: #eee;
 }
