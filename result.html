@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Результат Теста IQ</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            text-align: center;
+        }
+        .result-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin: 30px 0;
+        }
+        .iq-score {
+            font-size: 4em;
+            font-weight: bold;
+            color: #0057b8;
+            margin: 20px 0;
+        }
+        .title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .description {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background: #0057b8;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .secret {
+            background: #ffeaa7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            font-weight: bold;
+            color: #e67e22;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📈 Ваш результат</h1>
+
+<div class="result-box">
+    <div class="title">Ваш уровень интеллекта:</div>
+    <div class="iq-score" id="score">...</div>
+    <div class="description" id="desc">Подождите, идёт анализ нейронных импульсов...</div>
+
+    <button class="btn" onclick="location.href='test.html'">Пройти заново</button>
+    <button class="btn" style="background:#555;" onclick="location.href='index.html'">На главную</button>
+
+    <div class="secret" id="secret-msg">
+        🤫 Секрет: Ты выбрал «Б» на все вопросы? Так держать! Ты разгадал код вселенной. IQ 360 — только для посвящённых.
+    </div>
+</div>
+
+<script>
+    const answers = JSON.parse(localStorage.getItem('iq_answers') || '[]');
+
+    function calculateIQ() {
+        if (answers.length === 0) return Math.floor(Math.random() * 80) + 80;
+
+        // Если ВСЕ ответы — "b", то IQ = 360
+        const allB = answers.every(a => a === 'b');
+
+        if (allB) {
+            document.getElementById('secret-msg').style.display = 'block';
+            return 360;
+        }
+
+        // Иначе — случайный IQ от 80 до 160
+        return Math.floor(Math.random() * 80) + 80;
+    }
+
+    function getDescription(iq) {
+        if (iq === 360) return "Ты не человек. Ты — живой мем. Ты знаешь секрет: всегда выбирай «Б». Ты достиг просветления.";
+        if (iq >= 140) return "Гениальный уровень! Ты мыслишь нестандартно. Возможно, слишком нестандартно...";
+        if (iq >= 120) return "Высокий интеллект. Ты точно не выбираешь «Б» просто так?";
+        if (iq >= 100) return "Средний и выше. Ты как большинство, но с потенциалом!";
+        return "Не расстраивайся — IQ не главное. Особенно в этом тесте 😉";
+    }
+
+    const iq = calculateIQ();
+    document.getElementById('score').innerText = iq;
+    document.getElementById('desc').innerText = getDescription(iq);
+</script>
+
+</body>
+</html>
