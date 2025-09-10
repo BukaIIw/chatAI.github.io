@@ -1,1 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ТОП Гениев — IQ за 10 секунд</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #d9534f;
+            font-size: 2.2em;
+        }
+        .leaderboard {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            margin: 30px 0;
+            text-align: left;
+        }
+        .entry {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .rank {
+            font-weight: bold;
+            color: #d9534f;
+            min-width: 30px;
+            font-size: 1.3em;
+        }
+        .id { font-family: monospace; background: #f8f9fa; padding: 3px 8px; border-radius: 3px; }
+        .iq { font-weight: bold; color: #e67e22; min-width: 60px; }
+        .status { flex: 1; font-style: italic; color: #555; }
+        .date { color: #999; font-size: 0.9em; white-space: nowrap; }
+        .btn {
+            background: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
 
+<h1>🏆 ТОП-10 ГЕНИЕВ СКОРОСТИ</h1>
+
+<div class="leaderboard" id="lb-list">
+    <!-- Заполнится JS -->
+</div>
+
+<a href="index.html" class="btn">← На главную</a>
+
+<script>
+    function loadLeaderboard() {
+        let leaders = JSON.parse(localStorage.getItem('iq_leaders') || '[]');
+        const container = document.getElementById('lb-list');
+
+        if (leaders.length === 0) {
+            container.innerHTML = "<p>Никто ещё не осмелился пройти испытание. Первый шаг — за тобой!</p>";
+            return;
+        }
+
+        leaders.sort((a, b) => b.iq - a.iq);
+        const top = leaders.slice(0, 10);
+
+        let html = '';
+        top.forEach((item, index) => {
+            html += `
+                <div class="entry">
+                    <div class="rank">${index + 1}</div>
+                    <div class="id">${item.id}</div>
+                    <div class="iq">${item.iq}</div>
+                    <div class="status">"${item.status}"</div>
+                    <div class="date">${item.date}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    loadLeaderboard();
+</script>
+
+</body>
+</html>
