@@ -2,43 +2,60 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Онлайн Java IDE</title>
-  <style>
-    body { margin:0; height:100vh; display:flex; flex-direction:column; }
-    #editor { flex:1; }
-    #output { background:#111;color:#0f0;padding:10px;height:150px;overflow:auto; }
-    button { padding:10px; background:#1976d2;color:white;border:none;cursor:pointer; }
-  </style>
-  <!-- Подключаем Monaco Editor -->
+  <title>Онлайн Java IDE (стиль IntelliJ)</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Monaco Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
 </head>
 <body>
-  <button onclick="checkCode()">Запустить проверку</button>
-  <div id="editor"></div>
-  <pre id="output"></pre>
+  <!-- Верхняя панель -->
+  <div id="toolbar">
+    <button onclick="checkCode()">▶ Run</button>
+    <button onclick="formatCode()">⚙ Format</button>
+  </div>
+
+  <!-- Рабочая зона -->
+  <div id="workspace">
+    <div id="editor"></div>
+    <pre id="console">[Console output]</pre>
+  </div>
 
   <script>
     let editor;
 
-    // Инициализация Monaco
+    // подключаем Monaco (VS Code editor)
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
     require(['vs/editor/editor.main'], function () {
       editor = monaco.editor.create(document.getElementById('editor'), {
         value: 'class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, world!");\n    }\n}',
         language: 'java',
-        theme: 'vs-dark'
+        theme: 'vs-dark',
+        automaticLayout: true
       });
     });
 
-    // Простая проверка ошибок (учебный вариант)
+    // простая псевдо-проверка
     function checkCode() {
       const code = editor.getValue();
       let errors = [];
       if (!code.includes("class ")) errors.push("Нет класса!");
       if (!code.includes("main")) errors.push("Нет метода main!");
       if (!code.includes(";")) errors.push("Нет точек с запятой!");
-      document.getElementById("output").textContent = 
-        errors.length ? "❌ Ошибки:\n" + errors.join("\n") : "✅ Ошибок не найдено!";
+
+      const consoleBox = document.getElementById('console');
+      if (errors.length === 0) {
+        consoleBox.textContent = "[Compilation successful]\n✅ Ошибок не найдено!";
+        consoleBox.style.color = "#4caf50";
+      } else {
+        consoleBox.textContent = "[Compilation failed]\n" + errors.map(e=>"❌ "+e).join("\n");
+        consoleBox.style.color = "#ff4444";
+      }
+    }
+
+    // «Форматирование кода» (просто trim)
+    function formatCode() {
+      const code = editor.getValue().trim();
+      editor.setValue(code);
     }
   </script>
 </body>
