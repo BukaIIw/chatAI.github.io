@@ -2,22 +2,22 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Мой LM Client</title>
+  <title>Java Проверка кода</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Чат с ИИ</h1>
-  </header>
-  
-  <main>
-    <div id="chat-window"></div>
+  <h1>Проверка Java кода</h1>
 
-    <form id="chat-form">
-      <textarea id="user-input" placeholder="Напиши что-нибудь..." rows="3"></textarea>
-      <button type="submit">Отправить</button>
-    </form>
-  </main>
+  <textarea id="code-editor" placeholder="Напиши свой Java-код здесь...">
+class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, world!")
+    }
+}
+  </textarea>
+
+  <button id="check-btn">Проверить</button>
+  <pre id="output"></pre>
 
   <script src="script.js"></script>
 </body>
