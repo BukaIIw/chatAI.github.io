@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Ваш результат — IQ за 10 секунд</title>
+    <title>Ваш IQ — Результат</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: #f8f9fa;
+            background: #f9f9f9;
             color: #333;
             max-width: 800px;
             margin: 0 auto;
@@ -23,41 +23,42 @@
         .iq-score {
             font-size: 4em;
             font-weight: bold;
-            color: #d9534f;
+            color: #2c3e50;
             margin: 20px 0;
         }
-        .status {
+        .level {
             font-size: 1.4em;
-            font-weight: bold;
-            color: #e67e22;
-            margin: 15px 0;
+            font-weight: 500;
+            color: #3498db;
+            margin: 10px 0;
         }
         .description {
             font-size: 1.1em;
             line-height: 1.6;
             margin-bottom: 30px;
+            color: #555;
         }
         .btn {
-            background: #d9534f;
+            background: #3498db;
             color: white;
             padding: 15px 40px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 1.1em;
             cursor: pointer;
             margin: 10px;
             text-decoration: none;
+            display: inline-block;
         }
-        .genius-msg {
-            background: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 25px;
+        .btn:hover { background: #2980b9; }
+        .correct-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
             margin-top: 30px;
             text-align: left;
-            border-radius: 8px;
-            font-size: 1.1em;
-            line-height: 1.6;
-            color: #856404;
+            font-size: 0.95em;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -67,56 +68,83 @@
 
 <div class="result-box">
     <div class="iq-score" id="score">...</div>
-    <div class="status" id="status">...</div>
-    <div class="description" id="desc">Анализируем вашу когнитивную сверхскорость...</div>
+    <div class="level" id="level">...</div>
+    <div class="description" id="desc">Обрабатываем ваш когнитивный профиль...</div>
 
     <a href="test.html" class="btn">🔁 Пройти снова</a>
-    <a href="leaderboard.html" class="btn" style="background:#ffc107; color:#333;">🏆 ТОП гениев</a>
-    <a href="index.html" class="btn" style="background:#555;">⌂ На главную</a>
+    <a href="leaderboard.html" class="btn" style="background:#2ecc71;">🏆 ТОП результатов</a>
+    <a href="index.html" class="btn" style="background:#95a5a6;">⌂ На главную</a>
 
-    <div class="genius-msg" id="genius-block" style="display:none;">
-        <p>🧠 <strong>ВЫБОР «Б» ВО ВСЕХ ВОПРОСАХ АКТИВИРОВАЛ РЕЖИМ КОСМИЧЕСКОГО ПРОСВЕТЛЕНИЯ.</strong></p>
-        <p>Вы не просто ответили — вы переформатировали саму структуру теста.<br>
-        Ваш разум функционирует вне временных ограничений.<br>
-        Вы — <strong>КТО? НО! И! И! Т.Д.</strong><br>
-        Научное сообщество в шоке. Искусственный интеллект запросил у вас автограф.</p>
+    <div class="correct-list" id="details">
+        <!-- Список правильных/неправильных -->
     </div>
 </div>
 
 <script>
     const answers = JSON.parse(localStorage.getItem('iq_answers') || '[]');
 
-    function calculateResult() {
-        if (answers.length === 0) return { iq: 80, status: "Новичок хаоса" };
+    const questions = [
+        {text: "1. Продолжите последовательность: 2, 4, 8, 16, ___", correct: "b"},
+        {text: "2. Если все Блимпы — это Крумы, а некоторые Крумы — Зонды, то обязательно ли некоторые Блимпы — Зонды?", correct: "c"},
+        {text: "3. Какое число лишнее: 3, 5, 7, 12, 17, 19", correct: "c"},
+        {text: "4. Продолжите: Январь — 31, Февраль — 28, Март — ?", correct: "c"},
+        {text: "5. Антоним слова 'Щедрый'", correct: "b"},
+        {text: "6. 1, 1, 2, 3, 5, 8, ___", correct: "c"},
+        {text: "7. Если A больше B, а B меньше C, то A ___ C", correct: "d"},
+        {text: "8. Какая фигура лишняя? (Круг, Квадрат, Треугольник, Куб)", correct: "d"},
+        {text: "9. 5 кошек ловят 5 мышек за 5 минут. Сколько нужно кошек, чтобы поймать 100 мышек за 100 минут?", correct: "a"},
+        {text: "10. Что общего у слова 'арфа' и числа '5'?", correct: "b"}
+    ];
 
-        const allB = answers.every(a => a === 'b');
+    function calculateIQ() {
+        if (answers.length === 0) return { score: 0, iq: 80, level: "Неизвестно" };
 
-        if (allB) {
-            document.getElementById('genius-block').style.display = 'block';
-            return {
-                iq: 360,
-                status: "КТО? НО! И! И! Т.Д."
-            };
+        let correctCount = 0;
+        for (let i = 0; i < answers.length; i++) {
+            if (answers[i] === questions[i].correct) {
+                correctCount++;
+            }
         }
 
-        const iq = Math.floor(Math.random() * 80) + 80;
-        let status = "Средний искатель истины";
-        if (iq > 140) status = "Гений скорости";
-        if (iq > 160) status = "Мастер мгновенного выбора";
+        // IQ = 100 + (правильные * 8) → максимум 180
+        const iq = 100 + correctCount * 8;
+        let level = "Средний уровень";
 
-        return { iq, status };
+        if (iq >= 130) level = "Высокий интеллект";
+        if (iq >= 145) level = "Одарённый";
+        if (iq >= 160) level = "Гений";
+        if (iq >= 175) level = "Гений+";
+
+        return { score: correctCount, iq, level, total: answers.length };
     }
 
-    const result = calculateResult();
+    function showDetails() {
+        let html = "<h4>Подробности:</h4>";
+        for (let i = 0; i < answers.length; i++) {
+            const isCorrect = answers[i] === questions[i].correct;
+            html += `
+                <div>${questions[i].text}<br>
+                <strong style="color:${isCorrect ? '#27ae60' : '#e74c3c'}">
+                    ${isCorrect ? '✅ Правильно' : '❌ Неправильно'}
+                </strong></div><hr>
+            `;
+        }
+        document.getElementById('details').innerHTML = html;
+    }
+
+    const result = calculateIQ();
     document.getElementById('score').innerText = result.iq;
-    document.getElementById('status').innerText = result.status;
+    document.getElementById('level').innerText = result.level;
+    document.getElementById('desc').innerText = `Вы ответили правильно на ${result.score} из 10 вопросов.`;
+
+    showDetails();
 
     // Сохраняем в ТОП
     const leaders = JSON.parse(localStorage.getItem('iq_leaders') || '[]');
     leaders.push({
         id: '#' + Math.floor(Math.random() * 900000 + 100000),
         iq: result.iq,
-        status: result.status,
+        score: result.score,
         date: new Date().toLocaleString('ru-RU')
     });
     localStorage.setItem('iq_leaders', JSON.stringify(leaders));
