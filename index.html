@@ -2,13 +2,14 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Java Проверка кода</title>
+  <title>Проверка Java кода</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Проверка Java кода</h1>
+  <h1>Онлайн проверка Java</h1>
+  <p>Напиши Java-код и нажми «Запустить».</p>
 
-  <textarea id="code-editor" placeholder="Напиши свой Java-код здесь...">
+  <textarea id="code-editor" spellcheck="false">
 class Main {
     public static void main(String[] args) {
         System.out.println("Hello, world!")
@@ -16,7 +17,8 @@ class Main {
 }
   </textarea>
 
-  <button id="check-btn">Проверить</button>
+  <button id="run-btn">Запустить</button>
+  <h2>Результат выполнения:</h2>
   <pre id="output"></pre>
 
   <script src="script.js"></script>
