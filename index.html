@@ -2,54 +2,73 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Тест IQ за 1 минуту — Реальная проверка</title>
+    <title>GAMESENSE LOG ANALYZER</title>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f9f9f9;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 30px;
-            text-align: center;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 2.4em;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #7f8c8d;
-            font-weight: 500;
-            margin-bottom: 40px;
-        }
-        .btn {
-            display: block;
-            width: 300px;
-            margin: 15px auto;
-            background: #3498db;
-            color: white;
-            padding: 16px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.15em;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-        .btn:hover { background: #2980b9; }
-        .footer { margin-top: 60px; font-size: 0.9em; color: #aaa; }
+        body { background: #121212; color: #fff; font-family: monospace; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        textarea { width: 100%; height: 150px; bg: #222; color: #0f0; border: 1px solid #444; padding: 10px; }
+        button { background: #9be15d; color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .result { margin-top: 20px; }
+        .card { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-left: 5px solid red; }
+        .reason { color: #ff4d4d; font-weight: bold; }
+        .fix { color: #9be15d; margin-top: 5px; font-style: italic; }
     </style>
 </head>
 <body>
-    <h1>⏱️ ТЕСТ IQ ЗА 1 МИНУТУ</h1>
-    <div class="subtitle">10 реальных логических задач. 60 секунд. Без шуток.<br>Проверь свой настоящий уровень интеллекта.</div>
 
-    <a href="test.html" class="btn">🚀 НАЧАТЬ ТЕСТ</a>
-    <a href="leaderboard.html" class="btn" style="background:#95a5a6;">🏆 ТОП РЕЗУЛЬТАТОВ</a>
+<div class="container">
+    <h1>LOG ANALYZER <span style="color:#666">// HVH FIX</span></h1>
+    <p>Скопируй строки <code>[WEB_LOG]</code> из консоли чита и вставь сюда:</p>
+    <textarea id="logs" placeholder='Пример: [WEB_LOG] { "target": "Enemy", "reason": "spread", "hc": 50, "dmg": 20, "angle": 58 }'></textarea>
+    <button onclick="analyze()">АНАЛИЗИРОВАТЬ ПРОМАХИ</button>
+    
+    <div id="output" class="result"></div>
+</div>
 
-    <div class="footer">
-        © 2025 Cognitive Labs. Тест разработан на основе методик Raven, WAIS, MENSA.
-    </div>
+<script>
+function analyze() {
+    let text = document.getElementById("logs").value;
+    let lines = text.split("\n");
+    let output = document.getElementById("output");
+    output.innerHTML = "";
+
+    lines.forEach(line => {
+        if (line.includes("[WEB_LOG]")) {
+            try {
+                let jsonPart = line.substring(line.indexOf("{"));
+                let data = JSON.parse(jsonPart);
+                
+                let advice = "";
+                let color = "red";
+
+                // АНАЛИЗ ПРИЧИНЫ
+                if (data.reason === "spread") {
+                    advice = "FIX: Увеличь Minimum Hitchance (поставь 60+) или включи SafePoint.";
+                    color = "orange";
+                } else if (data.reason === "prediction error") {
+                    advice = "FIX: Враг лагает. Включи 'Force SafePoint' в резольвере.";
+                } else if (data.reason === "?" || data.reason === "unknown") {
+                    advice = "FIX: Это DESYNC. Твой угол (" + data.angle + ") неверный. Попробуй 58 или -58.";
+                } else {
+                    advice = "FIX: Неизвестная причина. Проверь пинг.";
+                }
+
+                let html = `
+                <div class="card" style="border-color: ${color}">
+                    <div>Target: <b>${data.target}</b></div>
+                    <div class="reason">Reason: ${data.reason}</div>
+                    <div>Angle: ${data.angle}° | Hitchance: ${data.hc}%</div>
+                    <div class="fix">💡 ${advice}</div>
+                </div>`;
+                
+                output.innerHTML += html;
+            } catch (e) {
+                console.log("Error parsing line");
+            }
+        }
+    });
+}
+</script>
+
 </body>
 </html>
