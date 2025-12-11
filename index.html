@@ -2,72 +2,216 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>GAMESENSE LOG ANALYZER</title>
+    <title>CYBER RESOLVER LOGS</title>
     <style>
-        body { background: #121212; color: #fff; font-family: monospace; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        textarea { width: 100%; height: 150px; bg: #222; color: #0f0; border: 1px solid #444; padding: 10px; }
-        button { background: #9be15d; color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .result { margin-top: 20px; }
-        .card { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-left: 5px solid red; }
-        .reason { color: #ff4d4d; font-weight: bold; }
-        .fix { color: #9be15d; margin-top: 5px; font-style: italic; }
+        :root {
+            --bg: #0b0b0b;
+            --panel: #141414;
+            --accent: #00e5ff;
+            --text: #e0e0e0;
+            --red: #ff4d4d;
+            --green: #00ff88;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', 'Consolas', monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+        h1 {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .card h3 { margin-top: 0; color: #888; font-size: 0.9em; }
+        .stat { font-size: 2em; font-weight: bold; color: #fff; }
+        
+        .log-list {
+            background: var(--panel);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a1a1a;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--red);
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+        .log-item:hover { transform: translateX(5px); }
+        .log-item.fixed { border-left-color: var(--green); }
+        
+        .badge {
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        .fix-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .fix-btn:hover { opacity: 0.8; }
+        
+        #input-area {
+            width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            background: var(--panel);
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>LOG ANALYZER <span style="color:#666">// HVH FIX</span></h1>
-    <p>Скопируй строки <code>[WEB_LOG]</code> из консоли чита и вставь сюда:</p>
-    <textarea id="logs" placeholder='Пример: [WEB_LOG] { "target": "Enemy", "reason": "spread", "hc": 50, "dmg": 20, "angle": 58 }'></textarea>
-    <button onclick="analyze()">АНАЛИЗИРОВАТЬ ПРОМАХИ</button>
-    
-    <div id="output" class="result"></div>
+    <h1>Cyber Logs <span style="font-size:0.5em; color: #555;">// RESOLVER V3</span></h1>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>TOTAL MISSES</h3>
+            <div class="stat" id="total-miss">0</div>
+        </div>
+        <div class="card">
+            <h3>LAST ANGLE FIX</h3>
+            <div class="stat" id="last-fix" style="color: var(--accent);">-</div>
+        </div>
+    </div>
+
+    <div id="input-area">
+        <input type="text" id="manual-link" placeholder="Вставь ссылку из консоли сюда (если не открылась сама)...">
+        <button class="fix-btn" onclick="parseManual()">ANALYZE</button>
+    </div>
+
+    <div class="log-list" id="logs">
+        <!-- Logs will appear here -->
+        <div style="text-align:center; color: #555; padding: 20px;">Ожидание данных...</div>
+    </div>
 </div>
 
 <script>
-function analyze() {
-    let text = document.getElementById("logs").value;
-    let lines = text.split("\n");
-    let output = document.getElementById("output");
-    output.innerHTML = "";
+    // Функция получения параметров из URL
+    function getParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            target: params.get('target'),
+            miss: params.get('miss'),
+            angle: params.get('angle'),
+            reason: params.get('reason')
+        };
+    }
 
-    lines.forEach(line => {
-        if (line.includes("[WEB_LOG]")) {
-            try {
-                let jsonPart = line.substring(line.indexOf("{"));
-                let data = JSON.parse(jsonPart);
-                
-                let advice = "";
-                let color = "red";
+    let missCount = 0;
 
-                // АНАЛИЗ ПРИЧИНЫ
-                if (data.reason === "spread") {
-                    advice = "FIX: Увеличь Minimum Hitchance (поставь 60+) или включи SafePoint.";
-                    color = "orange";
-                } else if (data.reason === "prediction error") {
-                    advice = "FIX: Враг лагает. Включи 'Force SafePoint' в резольвере.";
-                } else if (data.reason === "?" || data.reason === "unknown") {
-                    advice = "FIX: Это DESYNC. Твой угол (" + data.angle + ") неверный. Попробуй 58 или -58.";
-                } else {
-                    advice = "FIX: Неизвестная причина. Проверь пинг.";
-                }
+    function addLog(data) {
+        if (!data.target) return;
 
-                let html = `
-                <div class="card" style="border-color: ${color}">
-                    <div>Target: <b>${data.target}</b></div>
-                    <div class="reason">Reason: ${data.reason}</div>
-                    <div>Angle: ${data.angle}° | Hitchance: ${data.hc}%</div>
-                    <div class="fix">💡 ${advice}</div>
-                </div>`;
-                
-                output.innerHTML += html;
-            } catch (e) {
-                console.log("Error parsing line");
-            }
+        missCount++;
+        document.getElementById('total-miss').innerText = missCount;
+        
+        const logsDiv = document.getElementById('logs');
+        if (missCount === 1) logsDiv.innerHTML = ""; // Очистка заглушки
+
+        let advice = "";
+        let isFix = false;
+
+        // ЛОГИКА АНАЛИЗА (AI LOGIC)
+        if (data.reason === "spread") {
+            advice = "⚠️ SPREAD (Разброс). Увеличь Min Hitchance.";
+        } else if (data.angle == 58 || data.angle == -58) {
+            advice = "🛡️ MAX DESYNC. Враг использует 58°. Попробуй SafePoint.";
+        } else if (data.miss > 2) {
+            advice = "🔥 HARD TARGET. Включи BodyAim (Baim).";
+        } else {
+            advice = "🔍 SEARCHING. Резольвер подбирает угол...";
         }
-    });
-}
+
+        document.getElementById('last-fix').innerText = data.angle + "°";
+
+        const div = document.createElement('div');
+        div.className = 'log-item';
+        div.innerHTML = `
+            <div>
+                <div style="font-weight:bold; font-size:1.1em; margin-bottom:5px;">${data.target}</div>
+                <div>
+                    <span class="badge">Miss #${data.miss}</span>
+                    <span class="badge">Angle: ${data.angle}°</span>
+                    <span class="badge" style="color:#aaa">${data.reason}</span>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="color:var(--accent); font-weight:bold;">${advice}</div>
+            </div>
+        `;
+        
+        logsDiv.prepend(div); // Добавляем сверху
+    }
+
+    // Авто-запуск при открытии ссылки
+    const urlData = getParams();
+    if (urlData.target) {
+        addLog(urlData);
+    }
+
+    // Ручной ввод
+    function parseManual() {
+        const url = document.getElementById('manual-link').value;
+        if (url.includes("?")) {
+            const fakeUrl = new URL(url);
+            const params = new URLSearchParams(fakeUrl.search);
+            addLog({
+                target: params.get('target'),
+                miss: params.get('miss'),
+                angle: params.get('angle'),
+                reason: params.get('reason')
+            });
+            document.getElementById('manual-link').value = "";
+        } else {
+            alert("Неверная ссылка!");
+        }
+    }
 </script>
 
 </body>
